@@ -14,7 +14,7 @@ type BlockStore interface {
 	GetNull() Block
 	GetNext(Block) (Block, error)
 	GetPrev(Block) (Block, error)
-	Add([]byte) Block
+	Add(interface{}) Block
 	Append(Block) error
 }
 
@@ -26,7 +26,7 @@ type InMemoryStore struct {
 // NewInMemoryStore -
 func NewInMemoryStore() *InMemoryStore {
 	newStore := new(InMemoryStore)
-	newStore.Add([]byte("Genesis block"))
+	newStore.Add(ByteContent{[]byte("Genesis block")})
 	return newStore
 }
 
@@ -69,7 +69,7 @@ func (store *InMemoryStore) GetTail() Block {
 // GetNull -
 func (store *InMemoryStore) GetNull() Block {
 	nullBlock := Block{}
-	nullBlock.data = []byte("Null block")
+	nullBlock.data = ByteContent{[]byte("Null block")}
 	nullBlock.hash = Hash(nullBlock)
 	return nullBlock
 }
@@ -93,7 +93,7 @@ func (store *InMemoryStore) GetPrev(b Block) (Block, error) {
 }
 
 // Add -
-func (store *InMemoryStore) Add(data []byte) Block {
+func (store *InMemoryStore) Add(data interface{}) Block {
 	tail := store.GetTail()
 	newBlock := NewBlock(
 		tail.index+1,
@@ -115,11 +115,11 @@ func (store *InMemoryStore) Append(b Block) error {
 	return nil
 }
 
-// PrintChainAsString -
-func PrintChainAsString(store BlockStore) {
+// PrintChain -
+func PrintChain(store BlockStore) {
 	block := store.GetHead()
 	for block.index != store.GetNull().index {
-		PrintBlockAsString(block)
+		PrintBlock(block)
 		block, _ = store.GetNext(block)
 	}
 }

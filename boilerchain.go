@@ -12,7 +12,9 @@ func main() {
 		err := store.Append(blocks.NewBlock(
 			int64(i),
 			blocks.Hash(store.GetTail()),
-			[]byte(fmt.Sprintf("Test block %d", i)),
+			blocks.ByteContent{
+				Data: []byte(fmt.Sprintf("Test block %d", i)),
+			},
 		))
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
@@ -30,5 +32,5 @@ func main() {
 		fmt.Println("Valid chain")
 	}
 
-	blocks.PrintChainAsString(store)
+	blocks.PrintChain(store)
 }

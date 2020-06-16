@@ -80,7 +80,7 @@ func Hash(b Block) string {
 	hasher.Write(nonceAsBytes)
 	hasher.Write(timestampAsBytes)
 	hasher.Write([]byte(b.prevHash))
-	hasher.Write([]byte(b.data))
+	hasher.Write(b.data.(Serializer).Serialize())
 	return fmt.Sprintf("%x", hasher.Sum(nil))
 }
 
