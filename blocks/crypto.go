@@ -2,6 +2,7 @@ package blocks
 
 import (
 	"crypto/sha256"
+	"encoding"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -80,7 +81,8 @@ func Hash(b Block) string {
 	hasher.Write(nonceAsBytes)
 	hasher.Write(timestampAsBytes)
 	hasher.Write([]byte(b.prevHash))
-	hasher.Write(b.data.(Serializer).Serialize())
+	binaryData, _ := b.data.(encoding.BinaryMarshaler).MarshalBinary()
+	hasher.Write(binaryData)
 	return fmt.Sprintf("%x", hasher.Sum(nil))
 }
 

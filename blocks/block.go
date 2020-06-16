@@ -1,15 +1,10 @@
 package blocks
 
 import (
+	"encoding"
 	"fmt"
 	"time"
 )
-
-// Serializer -
-type Serializer interface {
-	Serialize() []byte
-	Unserialize() interface{}
-}
 
 // Block - building unit of the blockchain
 type Block struct {
@@ -26,14 +21,15 @@ type ByteContent struct {
 	Data []byte
 }
 
-// Serialize -
-func (bc ByteContent) Serialize() []byte {
-	return bc.Data
+// MarshalBinary -
+func (bc ByteContent) MarshalBinary() ([]byte, error) {
+	return bc.Data, nil
 }
 
-// Unserialize -
-func (bc ByteContent) Unserialize() interface{} {
-	return ByteContent{bc.Data}
+// UnmarshalBinary -
+func (bc *ByteContent) UnmarshalBinary(data []byte) error {
+	bc.Data = data
+	return nil
 }
 
 // NewBlock -
@@ -63,7 +59,8 @@ func PrintBlock(b Block) {
 	fmt.Printf("Nonce: %d\n", b.nonce)
 	fmt.Printf("Timestamp: %d\n", b.timestamp)
 	fmt.Printf("Prev. block hash: %s\n", b.prevHash)
-	fmt.Printf("Data: %s\n", b.data.(Serializer).Serialize())
+	binaryData, _ := b.data.(encoding.BinaryMarshaler).MarshalBinary()
+	fmt.Printf("Data: %s\n", binaryData)
 	fmt.Printf("Hash: %s\n", b.hash)
 	fmt.Printf("--- --- ---\n")
 }
