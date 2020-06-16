@@ -2,6 +2,7 @@ package main
 
 import (
 	"boilerchain/blocks"
+	"boilerchain/services/coin"
 	"fmt"
 )
 
@@ -33,4 +34,7 @@ func main() {
 	}
 
 	blocks.PrintChain(store)
+
+	wallet := coin.NewWallet("This is a test wallet", "qwerty123!@#")
+	coin.PrintWallet(wallet)
 }
