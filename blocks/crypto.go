@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"strings"
 )
 
 // ValidateChain -
@@ -21,8 +22,35 @@ func ValidateChain(store BlockStore) (bool, error) {
 	return true, nil
 }
 
+// ValidatePoW - validate proof of work
+func ValidatePoW(b Block) (bool, error) {
+	const numberOfZeros = 3
+	if b.hash[len(b.hash)-numberOfZeros:] != strings.Repeat("0", numberOfZeros) {
+		return false, errors.New("Invalid proof of work")
+	}
+	return true, nil
+}
+
+// Work -
+func Work(b Block) int64 {
+	b.nonce = 0
+	b.hash = Hash(b)
+	isValid, _ := ValidatePoW(b)
+	for isValid == false {
+		b.nonce++
+		b.hash = Hash(b)
+		isValid, _ = ValidatePoW(b)
+	}
+	return b.nonce
+}
+
 // Validate -
 func Validate(child Block, parent Block) (bool, error) {
+	isChildPoWValid, err := ValidatePoW(child)
+	if isChildPoWValid == false {
+		return false, err
+	}
+
 	if child.index-1 != parent.index {
 		return false, errors.New("Invalid index")
 	}

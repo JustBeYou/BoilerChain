@@ -2,7 +2,6 @@ package blocks
 
 import (
 	"fmt"
-	"math/rand"
 	"time"
 )
 
@@ -18,17 +17,20 @@ type Block struct {
 
 // NewBlock -
 func NewBlock(index int64, prevHash string, data []byte) Block {
-	nonce := rand.Int63()
 	currentTimestamp := time.Now().UnixNano()
 
 	newBlock := Block{
 		index,
-		nonce,
+		0,
 		currentTimestamp,
 		prevHash,
 		data,
 		"",
 	}
+
+	nonce := Work(newBlock)
+
+	newBlock.nonce = nonce
 	newBlock.hash = Hash(newBlock)
 
 	return newBlock
