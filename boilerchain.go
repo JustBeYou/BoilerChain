@@ -8,16 +8,18 @@ import (
 func main() {
 	store := blocks.NewInMemoryStore()
 
-	err := store.Append(blocks.NewBlock(
-		2,
-		blocks.Hash(store.GetTail()),
-		[]byte("Test block"),
-	))
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		panic("Invalid block")
-	} else {
-		fmt.Println("Added block")
+	for i := 2; i < 10; i++ {
+		err := store.Append(blocks.NewBlock(
+			int64(i),
+			blocks.Hash(store.GetTail()),
+			[]byte(fmt.Sprintf("Test block %d", i)),
+		))
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			panic("Invalid block")
+		} else {
+			fmt.Printf("Added block %d\n", i)
+		}
 	}
 
 	isValid, err := blocks.ValidateChain(store)
@@ -28,5 +30,5 @@ func main() {
 		fmt.Println("Valid chain")
 	}
 
-	blocks.PrintBlockAsString(store.GetTail())
+	blocks.PrintChainAsString(store)
 }

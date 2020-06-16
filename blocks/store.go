@@ -114,3 +114,12 @@ func (store *InMemoryStore) Append(b Block) error {
 	store.blocks = append(store.blocks, b)
 	return nil
 }
+
+// PrintChainAsString -
+func PrintChainAsString(store BlockStore) {
+	block := store.GetHead()
+	for block.index != store.GetNull().index {
+		PrintBlockAsString(block)
+		block, _ = store.GetNext(block)
+	}
+}
