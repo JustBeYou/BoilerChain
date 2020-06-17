@@ -8,7 +8,7 @@ import (
 
 // Wallet -
 type Wallet struct {
-	Id          string
+	ID          string
 	Description string
 	Amount      uint64
 	Keys        KeyPair
@@ -18,7 +18,7 @@ type Wallet struct {
 // MarshalBinary -
 func (w Wallet) MarshalBinary() ([]byte, error) {
 	binary := []byte{}
-	binary = append(binary, []byte(w.Id)...)
+	binary = append(binary, []byte(w.ID)...)
 	binary = append(binary, []byte(w.Description)...)
 	return binary, nil
 }
@@ -29,7 +29,7 @@ func (w Wallet) MarshalText() (string, error) {
 Description: %s
 Amount: %d
 Signature: %x
---- --- ---`, w.Id, w.Description, w.Amount, w.Signature)
+--- --- ---`, w.ID, w.Description, w.Amount, w.Signature)
 	return text, nil
 }
 
