@@ -26,10 +26,9 @@ func (bc ByteContent) MarshalBinary() ([]byte, error) {
 	return bc.Data, nil
 }
 
-// UnmarshalBinary -
-func (bc *ByteContent) UnmarshalBinary(data []byte) error {
-	bc.Data = data
-	return nil
+// MarshalText -
+func (bc ByteContent) MarshalText() (string, error) {
+	return string(bc.Data), nil
 }
 
 // NewBlock -
@@ -59,7 +58,7 @@ func PrintBlock(b Block) {
 	fmt.Printf("Nonce: %d\n", b.nonce)
 	fmt.Printf("Timestamp: %d\n", b.timestamp)
 	fmt.Printf("Prev. block hash: %s\n", b.prevHash)
-	binaryData, _ := b.data.(encoding.BinaryMarshaler).MarshalBinary()
+	binaryData, _ := b.data.(encoding.TextMarshaler).MarshalText()
 	fmt.Printf("Data: %s\n", binaryData)
 	fmt.Printf("Hash: %s\n", b.hash)
 	fmt.Printf("--- --- ---\n")
