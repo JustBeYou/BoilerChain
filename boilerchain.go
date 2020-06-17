@@ -7,34 +7,10 @@ import (
 )
 
 func main() {
-	store := blocks.NewInMemoryStore()
-
-	for i := 2; i < 10; i++ {
-		err := store.Append(blocks.NewBlock(
-			int64(i),
-			blocks.Hash(store.GetTail()),
-			blocks.ByteContent{
-				Data: []byte(fmt.Sprintf("Test block %d", i)),
-			},
-		))
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			panic("Invalid block")
-		} else {
-			fmt.Printf("Added block %d\n", i)
-		}
-	}
-
-	isValid, err := blocks.ValidateChain(store)
+	coin := coin.NewCoin("Buci", 1000000, "qwerty123456")
+	isValid, err := blocks.ValidateChain(coin.Store)
 	if isValid == false {
-		fmt.Printf("Error: %v\n", err)
-		panic("Invalid chain")
-	} else {
-		fmt.Println("Valid chain")
+		fmt.Printf("Invalid chain: %s\n", err)
 	}
-
-	blocks.PrintChain(store)
-
-	wallet := coin.NewWallet("This is a test wallet", "qwerty123!@#")
-	coin.PrintWallet(wallet)
+	blocks.PrintChain(coin.Store)
 }
