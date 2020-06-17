@@ -24,9 +24,9 @@ type InMemoryStore struct {
 }
 
 // NewInMemoryStore -
-func NewInMemoryStore() *InMemoryStore {
+func NewInMemoryStore(genesisData interface{}) *InMemoryStore {
 	newStore := new(InMemoryStore)
-	newStore.Add(ByteContent{[]byte("Genesis block")})
+	newStore.Add(genesisData)
 	return newStore
 }
 
