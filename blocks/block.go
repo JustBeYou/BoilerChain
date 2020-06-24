@@ -2,18 +2,19 @@ package blocks
 
 import (
 	"encoding"
+	"encoding/gob"
 	"fmt"
 	"time"
 )
 
 // Block - building unit of the blockchain
 type Block struct {
-	index     int64
-	nonce     int64
-	timestamp int64
-	prevHash  string
-	data      interface{}
-	hash      string
+	Index     int64
+	Nonce     int64
+	Timestamp int64
+	PrevHash  string
+	Data      interface{}
+	Hash      string
 }
 
 // ByteContent -
@@ -21,9 +22,9 @@ type ByteContent struct {
 	Data []byte
 }
 
-// MarshalBinary -
-func (bc ByteContent) MarshalBinary() ([]byte, error) {
-	return bc.Data, nil
+func init() {
+	gob.Register(Block{})
+	gob.Register(ByteContent{})
 }
 
 // MarshalText -
@@ -46,20 +47,20 @@ func NewBlock(index int64, prevHash string, data interface{}) Block {
 
 	nonce := Work(newBlock)
 
-	newBlock.nonce = nonce
-	newBlock.hash = Hash(newBlock)
+	newBlock.Nonce = nonce
+	newBlock.Hash = Hash(newBlock)
 
 	return newBlock
 }
 
 // PrintBlock -
 func PrintBlock(b Block) {
-	fmt.Printf("--- Block %d ---\n", b.index)
-	fmt.Printf("Nonce: %d\n", b.nonce)
-	fmt.Printf("Timestamp: %d\n", b.timestamp)
-	fmt.Printf("Prev. block hash: %s\n", b.prevHash)
-	binaryData, _ := b.data.(encoding.TextMarshaler).MarshalText()
+	fmt.Printf("--- Block %d ---\n", b.Index)
+	fmt.Printf("Nonce: %d\n", b.Nonce)
+	fmt.Printf("Timestamp: %d\n", b.Timestamp)
+	fmt.Printf("Prev. block Hash: %s\n", b.PrevHash)
+	binaryData, _ := b.Data.(encoding.TextMarshaler).MarshalText()
 	fmt.Printf("Data: %s\n", binaryData)
-	fmt.Printf("Hash: %s\n", b.hash)
+	fmt.Printf("Hash: %s\n", b.Hash)
 	fmt.Printf("--- --- ---\n")
 }

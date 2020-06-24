@@ -1,6 +1,7 @@
 package coin
 
 import (
+	"encoding/gob"
 	"fmt"
 
 	"github.com/rs/xid"
@@ -15,12 +16,14 @@ type Wallet struct {
 	Signature   []byte
 }
 
-// MarshalBinary -
-func (w Wallet) MarshalBinary() ([]byte, error) {
-	binary := []byte{}
-	binary = append(binary, []byte(w.ID)...)
-	binary = append(binary, []byte(w.Description)...)
-	return binary, nil
+func (t Wallet) RemoveSignature() interface{} {
+	copyT := t
+	copyT.Signature = []byte{}
+	return copyT
+}
+
+func init() {
+	gob.Register(Wallet{})
 }
 
 // MarshalText -

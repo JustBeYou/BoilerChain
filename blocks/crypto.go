@@ -1,9 +1,9 @@
 package blocks
 
 import (
+	"bytes"
 	"crypto/sha256"
-	"encoding"
-	"encoding/binary"
+	"encoding/gob"
 	"errors"
 	"fmt"
 	"strings"
@@ -12,7 +12,7 @@ import (
 // ValidateChain -
 func ValidateChain(store BlockStore) (bool, error) {
 	block := store.GetHead()
-	for block.index != store.GetNull().index {
+	for block.Index != store.GetNull().Index {
 		prevBlock, _ := store.GetPrev(block)
 		isValid, _ := Validate(block, prevBlock)
 		if isValid == false {
@@ -26,7 +26,7 @@ func ValidateChain(store BlockStore) (bool, error) {
 // ValidatePoW - validate proof of work
 func ValidatePoW(b Block) (bool, error) {
 	const numberOfZeros = 3
-	if b.hash[len(b.hash)-numberOfZeros:] != strings.Repeat("0", numberOfZeros) {
+	if b.Hash[len(b.Hash)-numberOfZeros:] != strings.Repeat("0", numberOfZeros) {
 		return false, errors.New("Invalid proof of work")
 	}
 	return true, nil
@@ -34,15 +34,15 @@ func ValidatePoW(b Block) (bool, error) {
 
 // Work -
 func Work(b Block) int64 {
-	b.nonce = 0
-	b.hash = Hash(b)
+	b.Nonce = 0
+	b.Hash = Hash(b)
 	isValid, _ := ValidatePoW(b)
 	for isValid == false {
-		b.nonce++
-		b.hash = Hash(b)
+		b.Nonce++
+		b.Hash = Hash(b)
 		isValid, _ = ValidatePoW(b)
 	}
-	return b.nonce
+	return b.Nonce
 }
 
 // Validate -
@@ -52,42 +52,36 @@ func Validate(child Block, parent Block) (bool, error) {
 		return false, err
 	}
 
-	if child.index-1 != parent.index {
-		return false, errors.New("Invalid index")
+	if child.Index-1 != parent.Index {
+		return false, errors.New("Invalid Index")
 	}
-	if child.timestamp < parent.timestamp {
-		return false, errors.New("Invalid timestamp")
+	if child.Timestamp < parent.Timestamp {
+		return false, errors.New("Invalid Timestamp")
 	}
-	if child.prevHash != parent.hash {
-		return false, errors.New("Invalid prevHash")
+	if child.PrevHash != parent.Hash {
+		return false, errors.New("Invalid PrevHash")
 	}
-	if child.hash != Hash(child) {
-		return false, errors.New("Invalid hash")
+	if child.Hash != Hash(child) {
+		return false, errors.New("Invalid Hash")
 	}
-	if parent.hash != Hash(parent) {
-		return false, errors.New("Invalid parent hash")
+	if parent.Hash != Hash(parent) {
+		return false, errors.New("Invalid parent Hash")
 	}
 	return true, nil
 }
 
 // Hash -
 func Hash(b Block) string {
-	indexAsBytes := toByteArray(b.index)
-	nonceAsBytes := toByteArray(b.nonce)
-	timestampAsBytes := toByteArray(b.timestamp)
+	blockCopy := b
+	blockCopy.Hash = ""
+
+	serialized := bytes.Buffer{}
+	err := gob.NewEncoder(&serialized).Encode(blockCopy)
+	if err != nil {
+		panic(err)
+	}
 
 	hasher := sha256.New()
-	hasher.Write(indexAsBytes)
-	hasher.Write(nonceAsBytes)
-	hasher.Write(timestampAsBytes)
-	hasher.Write([]byte(b.prevHash))
-	binaryData, _ := b.data.(encoding.BinaryMarshaler).MarshalBinary()
-	hasher.Write(binaryData)
+	hasher.Write(serialized.Bytes())
 	return fmt.Sprintf("%x", hasher.Sum(nil))
-}
-
-func toByteArray(i int64) []byte {
-	iAsBytes := make([]byte, 8)
-	binary.LittleEndian.PutUint64(iAsBytes, uint64(i))
-	return iAsBytes
 }

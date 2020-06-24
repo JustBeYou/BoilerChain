@@ -3,7 +3,7 @@ package coin
 import (
 	"bytes"
 	"encoding"
-	"encoding/binary"
+	"encoding/gob"
 	"fmt"
 
 	"github.com/rs/xid"
@@ -32,6 +32,12 @@ type Transaction struct {
 	Type      TransactionType
 	Data      interface{}
 	Signature []byte
+}
+
+func (t Transaction) RemoveSignature() interface{} {
+	copyT := t
+	copyT.Signature = []byte{}
+	return copyT
 }
 
 // NewTransaction -
@@ -63,7 +69,7 @@ func NewTransaction(
 
 // TransactionChain -
 type TransactionChain struct {
-	transactions []Transaction
+	Transactions []Transaction
 }
 
 // MineTransaction -
@@ -84,38 +90,24 @@ type PaymentTransaction struct {
 	Amount      uint64
 }
 
-// MarshalBinary -
-func (tc TransactionChain) MarshalBinary() ([]byte, error) {
-	bytes := []byte{}
-	for _, t := range tc.transactions {
-		tb, _ := t.MarshalBinary()
-		bytes = append(bytes, tb...)
-	}
-	return bytes, nil
+func init() {
+	gob.Register(Transaction{})
+	gob.Register(TransactionChain{})
+	gob.Register(MineTransaction{})
+	gob.Register(WalletAnnouncementTransaction{})
+	gob.Register(PaymentTransaction{})
 }
 
 // MarshalText -
 func (tc TransactionChain) MarshalText() ([]byte, error) {
 	buf := bytes.Buffer{}
 	buf.WriteString("\n")
-	for _, t := range tc.transactions {
+	for _, t := range tc.Transactions {
 		tb, _ := t.MarshalText()
 		buf.Write(tb)
 	}
 	buf.WriteString("--- --- ---\n")
 	return buf.Bytes(), nil
-}
-
-// MarshalBinary -
-func (t Transaction) MarshalBinary() ([]byte, error) {
-	bytes := []byte{}
-	bytes = append(bytes, []byte(t.ID)...)
-	bytes = append(bytes, []byte(t.PublisherID)...)
-	bytes = append(bytes, []byte(t.Description)...)
-	bytes = append(bytes, toByteArray(int64(t.Type))...)
-	binaryData, _ := t.Data.(encoding.BinaryMarshaler).MarshalBinary()
-	bytes = append(bytes, binaryData...)
-	return bytes, nil
 }
 
 // MarshalText -
@@ -131,26 +123,10 @@ func (t Transaction) MarshalText() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// MarshalBinary -
-func (t MineTransaction) MarshalBinary() ([]byte, error) {
-	bytes := []byte{}
-	bytes = append(bytes, []byte(t.BeneficiaryID)...)
-	bytes = append(bytes, toByteArray(int64(t.Amount))...)
-	return bytes, nil
-}
-
 // MarshalText -
 func (t MineTransaction) MarshalText() ([]byte, error) {
 	text := fmt.Sprintf("Beneficiary ID: %s\nAmount: %d\n", t.BeneficiaryID, t.Amount)
 	return []byte(text), nil
-}
-
-// MarshalBinary -
-func (t WalletAnnouncementTransaction) MarshalBinary() ([]byte, error) {
-	bytes := []byte{}
-	binaryWallet, _ := t.Created.MarshalBinary()
-	bytes = append(bytes, binaryWallet...)
-	return bytes, nil
 }
 
 // MarshalText -
@@ -160,23 +136,8 @@ func (t WalletAnnouncementTransaction) MarshalText() ([]byte, error) {
 	return []byte(text), nil
 }
 
-// MarshalBinary -
-func (t PaymentTransaction) MarshalBinary() ([]byte, error) {
-	bytes := []byte{}
-	bytes = append(bytes, []byte(t.RecipientID)...)
-	bytes = append(bytes, []byte(t.SenderID)...)
-	bytes = append(bytes, toByteArray(int64(t.Amount))...)
-	return bytes, nil
-}
-
 // MarshalText -
 func (t PaymentTransaction) MarshalText() ([]byte, error) {
 	text := fmt.Sprintf("From: %s\nTo: %s\nAmount: %d\n", t.SenderID, t.RecipientID, t.Amount)
 	return []byte(text), nil
-}
-
-func toByteArray(i int64) []byte {
-	iAsBytes := make([]byte, 8)
-	binary.LittleEndian.PutUint64(iAsBytes, uint64(i))
-	return iAsBytes
 }

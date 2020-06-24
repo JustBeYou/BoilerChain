@@ -33,7 +33,7 @@ func NewInMemoryStore(genesisData interface{}) *InMemoryStore {
 // GetByIndex -
 func (store *InMemoryStore) GetByIndex(index int64) (Block, error) {
 	for _, block := range store.blocks {
-		if block.index == index {
+		if block.Index == index {
 			return block, nil
 		}
 	}
@@ -43,7 +43,7 @@ func (store *InMemoryStore) GetByIndex(index int64) (Block, error) {
 // GetByHash -
 func (store *InMemoryStore) GetByHash(hash string) (Block, error) {
 	for _, block := range store.blocks {
-		if block.hash == hash {
+		if block.Hash == hash {
 			return block, nil
 		}
 	}
@@ -69,14 +69,14 @@ func (store *InMemoryStore) GetTail() Block {
 // GetNull -
 func (store *InMemoryStore) GetNull() Block {
 	nullBlock := Block{}
-	nullBlock.data = ByteContent{[]byte("Null block")}
-	nullBlock.hash = Hash(nullBlock)
+	nullBlock.Data = ByteContent{[]byte("Null block")}
+	nullBlock.Hash = Hash(nullBlock)
 	return nullBlock
 }
 
 // GetNext -
 func (store *InMemoryStore) GetNext(b Block) (Block, error) {
-	block, err := store.GetByIndex(b.index + 1)
+	block, err := store.GetByIndex(b.Index + 1)
 	if err != nil {
 		return store.GetNull(), errors.New("Next block does not exist")
 	}
@@ -85,7 +85,7 @@ func (store *InMemoryStore) GetNext(b Block) (Block, error) {
 
 // GetPrev -
 func (store *InMemoryStore) GetPrev(b Block) (Block, error) {
-	block, err := store.GetByIndex(b.index - 1)
+	block, err := store.GetByIndex(b.Index - 1)
 	if err != nil {
 		return store.GetNull(), errors.New("Previous block does not exist")
 	}
@@ -96,8 +96,8 @@ func (store *InMemoryStore) GetPrev(b Block) (Block, error) {
 func (store *InMemoryStore) Add(data interface{}) Block {
 	tail := store.GetTail()
 	newBlock := NewBlock(
-		tail.index+1,
-		tail.hash,
+		tail.Index+1,
+		tail.Hash,
 		data,
 	)
 	store.blocks = append(store.blocks, newBlock)
@@ -118,7 +118,7 @@ func (store *InMemoryStore) Append(b Block) error {
 // PrintChain -
 func PrintChain(store BlockStore) {
 	block := store.GetHead()
-	for block.index != store.GetNull().index {
+	for block.Index != store.GetNull().Index {
 		PrintBlock(block)
 		block, _ = store.GetNext(block)
 	}

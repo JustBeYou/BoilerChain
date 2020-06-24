@@ -1,15 +1,23 @@
 package coin
 
 import (
+	"bytes"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha512"
 	"crypto/x509"
-	"encoding"
+	"encoding/gob"
 	"encoding/pem"
 	"errors"
 )
+
+// RemovableSignature - signature of an object must not contain the signature
+// itself, so any object that is meant to be signed must provide a method
+// to return a copy of the object without the signature
+type RemovableSignature interface {
+	RemoveSignature() interface{}
+}
 
 // KeyPair -
 type KeyPair struct {
@@ -64,7 +72,13 @@ func DecryptPrivateKey(privateKeyEncrypted pem.Block, passphrase string) (rsa.Pr
 
 // Sign -
 func Sign(privateKey rsa.PrivateKey, data interface{}) ([]byte, error) {
-	dataBytes, _ := data.(encoding.BinaryMarshaler).MarshalBinary()
+	buffer := bytes.Buffer{}
+	err := gob.NewEncoder(&buffer).Encode(data.(RemovableSignature).RemoveSignature())
+	if err != nil {
+		panic(err)
+	}
+
+	dataBytes := buffer.Bytes()
 	hash := sha512.Sum512(dataBytes)
 	signature, err := rsa.SignPKCS1v15(
 		rand.Reader,
@@ -80,9 +94,15 @@ func Sign(privateKey rsa.PrivateKey, data interface{}) ([]byte, error) {
 
 // VerifySign -
 func VerifySign(publicKey rsa.PublicKey, data interface{}, signature []byte) (bool, error) {
-	dataBytes, _ := data.(encoding.BinaryMarshaler).MarshalBinary()
+	buffer := bytes.Buffer{}
+	err := gob.NewEncoder(&buffer).Encode(data.(RemovableSignature).RemoveSignature())
+	if err != nil {
+		panic(err)
+	}
+
+	dataBytes := buffer.Bytes()
 	hash := sha512.Sum512(dataBytes)
-	err := rsa.VerifyPKCS1v15(
+	err = rsa.VerifyPKCS1v15(
 		&publicKey,
 		crypto.SHA512,
 		hash[:],
