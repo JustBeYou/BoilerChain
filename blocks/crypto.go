@@ -25,8 +25,7 @@ func ValidateChain(store BlockStore) (bool, error) {
 
 // ValidatePoW - validate proof of work
 func ValidatePoW(b Block) (bool, error) {
-	const numberOfZeros = 3
-	if b.Hash[len(b.Hash)-numberOfZeros:] != strings.Repeat("0", numberOfZeros) {
+	if b.Hash[len(b.Hash)-int(b.Difficulty):] != strings.Repeat("0", int(b.Difficulty)) {
 		return false, errors.New("Invalid proof of work")
 	}
 	return true, nil
@@ -54,6 +53,9 @@ func Validate(child Block, parent Block) (bool, error) {
 
 	if child.Index-1 != parent.Index {
 		return false, errors.New("Invalid Index")
+	}
+	if child.Difficulty != parent.Difficulty {
+		return false, errors.New("Invalid difficulty")
 	}
 	if child.Timestamp < parent.Timestamp {
 		return false, errors.New("Invalid Timestamp")

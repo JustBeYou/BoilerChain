@@ -10,6 +10,7 @@ import (
 // Block - building unit of the blockchain
 type Block struct {
 	Index     int64
+	Difficulty int8
 	Nonce     int64
 	Timestamp int64
 	PrevHash  string
@@ -33,11 +34,13 @@ func (bc ByteContent) MarshalText() (string, error) {
 }
 
 // NewBlock -
+const defaultBlockDifficulty = 3
 func NewBlock(index int64, prevHash string, data interface{}) Block {
 	currentTimestamp := time.Now().UnixNano()
 
 	newBlock := Block{
 		index,
+		defaultBlockDifficulty,
 		0,
 		currentTimestamp,
 		prevHash,
